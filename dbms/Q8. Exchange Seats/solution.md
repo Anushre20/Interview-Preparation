@@ -1,55 +1,51 @@
-# 626. Exchange Seats
+# 🪑 LeetCode 626 – Exchange Seats
 
-## Intuition
+## 📌 Problem Statement
 
-We are given a table where:
+Table: `Seat`
 
-- `id` represents the seat number
-- `student` represents the student sitting in that seat
+| Column Name | Type |
+|------------|------|
+| id         | int  |
+| student    | varchar |
 
-The goal is to **swap the seat IDs for every pair of consecutive students**.
+`id` is the primary key column.
+Each row of this table indicates the name and the ID of a student.
 
-This means:
+Write an SQL query to swap the seat id of every two consecutive students.  
+If the number of students is odd, the last student should not be swapped.
 
-| Original IDs | After Swap |
-|--------------|------------|
-| 1, 2         | 2, 1       |
-| 3, 4         | 4, 3       |
-| 5            | 5 (unchanged if odd count) |
-
-So:
-
-- Odd ID → swap with next ID (`id + 1`)
-- Even ID → swap with previous ID (`id - 1`)
-- BUT if the total number of students is **odd**, the last student should **not** be swapped.
+Return the result table ordered by `id` in ascending order.
 
 ---
 
-## Approach
+## 💡 Approach
 
-We use a `CASE` statement:
+We need to swap every pair of consecutive seat IDs:
 
-1. If `id` is odd AND it's **not the last id** → swap with `id + 1`
-2. If `id` is even → swap with `id - 1`
-3. If it's the last odd id → keep it unchanged
+- If `id` is **odd**, swap with `id + 1` (only if it exists).
+- If `id` is **even**, swap with `id - 1`.
+- If it is the **last row and odd**, keep it unchanged.
 
-To detect the last row, we compare with:
+### Logic Breakdown
+
+1. Use a `CASE` statement to determine the new `id`.
+2. Check whether the `id` is odd using `id % 2 = 1`.
+3. Ensure `id + 1` exists before swapping (to handle odd total rows).
+4. For even IDs, simply subtract 1.
+5. Order the final result by `id`.
+
+---
+
+## 🛠️ SQL Solution
 
 ```sql
-SELECT
-    CASE
-        WHEN id % 2 = 1 AND id < (SELECT COUNT(*) FROM Seat) THEN id + 1
+SELECT 
+    CASE 
+        WHEN id % 2 = 1 AND id + 1 IN (SELECT id FROM Seat) THEN id + 1
         WHEN id % 2 = 0 THEN id - 1
         ELSE id
     END AS id,
     student
 FROM Seat
 ORDER BY id;
-```
----
-
-### Complexity Analysis
-
-- Time Complexity: O(N) as Each row is processed once, COUNT(*) is computed once.
-
-- Space Complexity: O(1) as No extra storage used, Only transformation of output.
